@@ -1,0 +1,203 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>ASSISTments Content for Google Classroom</title>
+<link rel="shortcut icon" href="images/shortcut_logo.png">
+<link rel="stylesheet" href="stylesheets/jquery-ui.css">
+<!-- Bootstrap core CSS -->
+<link href="stylesheets/bootstrap.min.css" rel="stylesheet">
+<!-- Optional theme -->
+<link href="stylesheets/bootstrap-theme.min.css" rel="stylesheet">
+<script
+	src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+<script type="text/javascript" src="js/bootstrap.min.js"></script>
+<style type="text/css">
+body {
+	padding-top: 50px;
+	padding-bottom: 20px;
+}
+.apps_link:hover{
+	cursor:pointer;
+}
+.container_customize{
+	padding:0 60px 0 30px;
+}
+a:hover{
+	cursor:pointer;
+}
+
+.problem_building_img :hover {
+	cursor:pointer;
+}
+.nav_active{
+	color:white !important;
+}
+.footer_section{
+	position:fixed;
+	bottom:10px;
+	text-align:center;
+}
+
+.apps_link {
+	text-align: center;
+}
+</style>
+<script>
+var CLASSROOM_CLIENT_ID = "757036402283-8o3nu8pdve8snhj8ds11te8bnsrnmuu6.apps.googleusercontent.com";
+var SCOPES = ["https://www.googleapis.com/auth/classroom.profile.emails",
+              "https://www.googleapis.com/auth/classroom.rosters.readonly",
+              "https://www.googleapis.com/auth/classroom.courses"];
+var toolSelected = "";
+	$(function(){
+		$(".apps_link").click(function(){
+			var id = $(this).attr("id");
+			toolSelected = id;
+			if(id == "skill_builder_link"){
+				window.location.assign("/google_classroom/skill_builder.html");
+			}else if (id == "ap_statistics_link"){
+				window.location.assign("/direct/SkillBuilderGoogleClassroom?folder_id=210644&tool_type=ap_statistics&location="
+						+locationStr);
+			}else if (id == "chemistry_link"){
+				window.location.assign("/direct/SkillBuilderGoogleClassroom?folder_id=226695&tool_type=chemistry&location="
+						+locationStr);
+			} else if(id == "problem_solving_link") {
+				window.location.assign("/direct/SkillBuilderGoogleClassroom?folder_id=231370&tool_type=problem_solving&location="+
+						locationStr);
+			}
+			
+		});
+		
+		$(".navbar_item").click(function(){
+			var id = $(this).attr("id");
+			if(id == "landing_page" || id == "logo"){
+				toolSelected = "landing_page";
+				window.location.assign("/direct/GoogleAppsLandingPage?location="+locationStr);
+			}else if(id == "skill_builder_page"){
+				toolSelected = "skill_builder_link";
+				window.location.assign("/google_classroom/skill_builder.html");
+			}else if (id == "ap_page"){
+				toolSelected = "ap_statistics_link";
+				window.location.assign("/direct/SkillBuilderGoogleClassroom?folder_id=210644&tool_type=ap_statistics&location="+locationStr);
+			}else if(id == "chemistry_page"){
+				toolSelected = "chemistry_link";
+				window.location.assign("/direct/SkillBuilderGoogleClassroom?folder_id=226695&tool_type=chemistry&location="+locationStr);
+			} else if(id == "problem_solving_page") {
+					window.location.assign("/direct/SkillBuilderGoogleClassroom?folder_id=231370&tool_type=problem_solving&location="+locationStr);
+			}
+			
+		});
+		$(".apps_link").hover(function(){
+			$("img",this).animate({
+				width:"+=6"
+			},100);
+		},function(){
+			$("img",this).animate({
+				width:"-=6"
+			},100);
+		});
+		$(".problem_building_img").hover(function() {
+			$("img",this).animate({
+				width:"+=8",
+				height: "+=8"
+			},100);
+		},function(){
+			$("img",this).animate({
+				width:"-=8",
+				height: "-=8"
+			},100);
+		});
+	});
+</script>
+</head>
+<body>
+	<nav class="navbar navbar-inverse navbar-fixed-top">
+	<div class="container_customize">
+		<div class="navbar-header">
+			<button type="button" class="navbar-toggle collapsed"
+				data-toggle="collapse" data-target="#navbar" aria-expanded="false"
+				aria-controls="navbar">
+				<span class="sr-only">Toggle navigation</span> 
+				<span class="icon-bar"></span> 
+				<span class="icon-bar"></span> 
+				<span class="icon-bar"></span>
+			</button>
+			<a class="navbar-brand navbar_item" id="logo"><img src="images/ASSISTments_APP_logo.png" style="width:30px; display:inline;margin-right:5px;"/>ASSISTments Content</a>
+		</div>
+		<div id="navbar" class="navbar-collapse collapse">
+			<ul class="nav navbar-nav">
+				<li><a id="landing_page" class="navbar_item nav_active" >Home</a></li>
+				<li><a id="skill_builder_page" class="navbar_item" >Math Skill Builders</a></li>
+				<li><a id="problem_solving_page" class="navbar_item" >Math Problem Solving</a></li>
+				<li><a id="ap_page" class="navbar_item" >AP Statistics</a></li>
+				<li><a id="chemistry_page" class="navbar_item" >Chemistry</a></li>
+			</ul>
+		</div>
+		<!--/.navbar-collapse -->
+	</div>
+	</nav>
+
+	<!-- Main jumbotron for a primary marketing message or call to action -->
+	<div class="jumbotron" style="background-color:white;">
+		<div class="container">
+			<div style="text-align: center;">
+			<h1><small style="color:#333;">ASSISTments Content for Google Classroom</small></h1>
+			<h2 style="color:#777;">Select a topic to begin</h2>
+			</div>
+			<div class="row" style="margin-top:70px; margin-left: -12%;">
+			<div class="col-md-2 col-md-offset-1">
+			<div id="skill_builder_link" class="apps_link">
+				<h2><img src="images/assistments_app_math.png" style="width:90px;"></h2>
+				<h3>Math Skill Builders</h3>
+			</div>	
+			</div>
+			<div class="col-md-2 col-md-offset-1">
+			<div id="problem_solving_link" class="apps_link">
+				<h2><img src="images/assistments_app_ps.png" style="width:90px;"></h2>
+				<h3>Math Problem Solving</h3>
+			</div>
+			</div>
+			<div class="col-md-2 col-md-offset-1">
+			<div id="ap_statistics_link" class="apps_link">
+				<h2><img src="images/assistments_app_ap.png" style="width:90px;"></h2>
+				<h3>AP Statistics</h3>
+			</div>
+			</div>
+			<div class="col-md-2 col-md-offset-1">
+			<div id="chemistry_link" class="apps_link">
+				<h2><img src="images/assistments_app_chemistry.png" style="width:90px;"></h2>
+				<h3>Chemistry</h3>
+			</div>
+			</div>
+		</div>
+		</div>
+	</div>
+
+	<div class="container " >
+
+		<hr>
+
+		<footer>
+		<p>&copy; ASSISTments 2016</p>
+		</footer>
+	</div>
+	<!-- /container -->
+<div class="modal fade" id="message_modal">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title">Message</h4>
+      </div>
+      <div class="modal-body">
+        <p id="message_body"></p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+      </div>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+</body>
+</html>
