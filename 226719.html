@@ -108,6 +108,7 @@ var tour;
 			$.ajax({
 				url: 'http://www.assistmentsdirect.org/google_classroom/setup',
 				type: 'POST',
+				crossDomain: true,
 				data: {course_id: course_id, course_name: course_name, google_user_id: ownerId, problem_set_id: problem_set_id,
 								first_name: firstName, last_name: lastName, email_address: emailAddr},
 				async: false,
