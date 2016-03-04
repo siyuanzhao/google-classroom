@@ -1,0 +1,1443 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Math Skill Builders</title>
+<link rel="shortcut icon" href="images/shortcut_logo.png">
+<link rel="stylesheet" href="stylesheets/sharelinks.css">
+<!-- Bootstrap core CSS -->
+<link href="stylesheets/bootstrap.min.css" rel="stylesheet">
+<link href="stylesheets/bootstrap-tour.min.css" rel="stylesheet">
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/font-awesome/4.4.0/css/font-awesome.min.css">
+<!-- Optional theme -->
+<link href="stylesheets/bootstrap-theme.min.css" rel="stylesheet">
+<link href="stylesheets/bootstrap-select.min.css" rel="stylesheet">
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.3/jquery.min.js"></script>
+<script type="text/javascript" src="js/bootstrap.min.js"></script>
+<script type="text/javascript" src="js/bootstrap-tour.min.js"></script>
+<script type="text/javascript" 
+	src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.7.5/js/bootstrap-select.min.js"></script>
+<script src="https://apis.google.com/js/platform.js" async defer></script>
+<script src="https://apis.google.com/js/client.js"></script>
+<style type="text/css">
+li {
+	list-style-type: none;
+}
+a:hover{
+	cursor: pointer;
+}
+h3 a:hover{
+	color:#005192;
+}
+
+.container_customize{
+
+	padding:0 60px 0 30px;
+}
+.nav_active{
+	color:white !important;
+}
+.tour-step-backdrop>td{
+	position:relative !important;
+}
+
+::-webkit-scrollbar {
+    -webkit-appearance: none;
+    width: 8px;
+}
+
+  ::-webkit-scrollbar-track {
+    background-color: rgba(57,57,57, .6);
+    border-radius: 8px;
+}
+::-webkit-scrollbar-thumb {
+    border-radius: 8px;
+    background-color: rgba(156, 156, 156, .6);
+}
+</style>
+<script>
+var CLASSROOM_CLIENT_ID = "757036402283-jbagh0mhn93eipp9i2ie54ma3gle8fio.apps.googleusercontent.com";
+var SCOPES = ["https://www.googleapis.com/auth/classroom.profile.emails",
+              "https://www.googleapis.com/auth/classroom.rosters.readonly",
+              "https://www.googleapis.com/auth/classroom.courses"];
+var ownerId = "";
+var problem_set_id = "";
+var problem_set_name = "";
+var link_to_share = "";
+var description = "";
+var firstName, lastName, emailAddr;
+var instruction = "Each assignment is a skill builder. Students work on one skill until they get three right in a row."
+				+"<br/><br/>Click on the name for a sample of the problems and the green icon to assign to your class.";
+var toolSelected = "";
+var tour;
+	$(function() {
+		$('.selectpicker').selectpicker();
+		//set the nav bar active item
+		var toolType = $("#tool_type").val();
+		if(toolType == "skill_builder"){
+			$("#skill_builder_page").addClass("nav_active");
+			$("title").html("Math Skill Builders");
+		}else if (toolType == "ap_statistics"){
+			$("#ap_page").addClass("nav_active");
+		}else if(toolType == "chemistry"){
+			$("#chemistry_page").addClass("nav_active");
+			$("title").html("Chemistry");
+		} else if(toolType == "problem_solving") {
+			$("#problem_solving_page").addClass("nav_active");
+			$("title").html("Math Problem Solving");
+		}
+		
+		$("#share_to_classroom_btn").click(function(e) {
+			var course_id = $("#courses_select option:selected").val(); 
+			var course_name = $("#courses_select option:selected").text();
+			var link_to_share = "";
+			$(this).addClass("disabled");
+			$.ajax({
+				url: 'google_classroom/setup',
+				type: 'POST',
+				data: {course_id: course_id, course_name: course_name, google_user_id: ownerId, problem_set_id: problem_set_id,
+								first_name: firstName, last_name: lastName, email_address: emailAddr},
+				async: false,
+				success: function(data) {
+					
+					link_to_share = encodeURI(data.classroom_link);
+					if(data.is_skill_builder) {
+						description = 'This is a skill builder, work until you get three right in a row';
+					} else {
+						description = 'Complete all the problems in the problem set';
+					}
+				},
+				error: function(data) {
+					console.log(data);
+					return;
+				}
+			});
+			var url = 'https://classroom.google.com/share?url='+link_to_share+'&title='+problem_set_name+
+					'&description='+description;
+			window.open(url, '', 'width=650,height=450');
+			$("#share_to_classroom_btn").removeClass("disabled");
+		});
+		(function ($) {
+			
+	        $('#filter').keyup(function () {
+	
+	            var rex = new RegExp($(this).val(), 'i');
+	            $('.searchable .curriculum_item').hide();
+	            $('.searchable .curriculum_item').filter(function () {
+	                return rex.test($(this).text());
+	            }).show();
+	
+	        });
+	
+	    }(jQuery));
+		$(".navbar_item").click(function(){
+			var id = $(this).attr("id");
+			if(id == "landing_page" || id == "logo"){
+				toolSelected ="landing_page";
+				window.location.assign("index.html");
+			}else if(id == "skill_builder_page"){
+				toolSelected = "skill_builder_link";
+				window.location.assign("177559.html");
+			}else if (id == "ap_page"){
+				toolSelected = "ap_statistics_link";
+				window.location.assign("210644.html");
+			}else if(id == "chemistry_page"){
+				toolSelected = "chemistry_link";
+				window.location.assign("226712.html");
+			} else if(id == "problem_solving_page") {
+				window.location.assign("183739.html");
+			}
+			
+		});
+		
+		
+	});
+	function handleAuthResult(authResult) {
+		console.log(authResult);
+		if (authResult && !authResult.error) {
+			console.log(authResult);
+		    //get user profile
+		    var request = gapi.client.request({
+				root : 'https://classroom.googleapis.com',
+				path : 'v1/userProfiles/me',
+			});
+
+			request.execute(function(resp) {
+				if(resp.error != null) {
+		    		if(resp.error.code == 403) {
+		    			$("#message_body").html("Sorry... Google Classroom is not available for your google account at this time.");
+		    			$("#message_body").css("color", "blue");
+		    			$('#message_modal').modal('show');
+			    		return;
+		    		}
+		    		$("#message_body").html("Sorry... Something goes wrong here with Google Classroom. But we have no idea what causes the problem.");
+		    		$("#message_body").css("color", "red");
+		    		$('#message_modal').modal('show');
+		    		return;
+		    	}
+				firstName = resp.name.givenName; 
+				lastName = resp.name.familyName;
+				emailAddr = resp.emailAddress;
+				ownerId = resp.id;
+			});
+		    var request = gapi.client.request({
+				root : 'https://classroom.googleapis.com',
+				path : 'v1/courses',
+				params: {
+					teacherId: 'me'
+				}
+			});
+		    
+		    request.execute(function(resp) {
+		    	console.log(resp);
+		    	//first check if the user has the permission to classroom
+		    	if(resp.error != null) {
+		    		if(resp.error.code == 403) {
+		    			$("#message_body").html("Sorry... Google Classroom is not available for your google account at this time.");
+		    			$("#message_body").css("color", "blue");
+		    			$('#message_modal').modal('show');
+			    		return;
+		    		}
+		    		$("#message_body").html("Sorry... Something goes wrong here with Google Classroom. But we have no idea what causes the problem.");
+		    		$("#message_body").css("color", "red");
+		    		$('#message_modal').modal('show');
+		    		return;
+		    	}
+		    	var courses = resp.courses;
+		    	$("#courses_select").html("");
+		    	if(courses == null) {
+		    		$("#message_body").html("Sorry... You don't have any class!<br> You should at least have a class in Google Classroom.");
+		    		$("#message_body").css("color", "blue");
+		    		$('#message_modal').modal('show');
+		    	} else if ((courses.length > 0)) {
+		    		var i = 0;
+		    		for(i=0; i < courses.length; i++) {
+		    			var course = courses[i];
+		    			if(course.courseState == 'ACTIVE') {
+		    				if(course.section != null) {
+		    					$("#courses_select").append($("<option></option>")
+		    						.attr("value", course.id)
+		    						.html(course.name + " - " + course.section));
+		    				} else {
+		    					$("#courses_select").append($("<option></option>")
+			    						.attr("value", course.id)
+			    						.html(course.name));
+		    				}
+		    			}
+		    		}
+		    		$('.selectpicker').selectpicker('refresh');
+		    		$('#myModal').modal('show');
+		    	}
+		    });
+		} else {
+			$("#message_body").html("It seems that you don't log into Google. Please sign into Google first and then access the app.");
+    		$("#message_body").css("color", "blue");
+    		$('#message_modal').modal('show');
+		}
+		
+	}
+</script>
+</head>
+<body>
+	<nav class="navbar navbar-inverse navbar-fixed-top">
+	<div class="container_customize">
+		<div class="navbar-header">
+			<button type="button" class="navbar-toggle collapsed"
+				data-toggle="collapse" data-target="#navbar" aria-expanded="false"
+				aria-controls="navbar">
+				<span class="sr-only">Toggle navigation</span> 
+				<span class="icon-bar"></span> 
+				<span class="icon-bar"></span> 
+				<span class="icon-bar"></span>
+			</button>
+			<a class="navbar-brand navbar_item" id="logo"><img src="images/ASSISTments_APP_logo.png" style="width:30px; display:inline;margin-right:5px;"/>ASSISTments App</a>
+		</div>
+		<div id="navbar" class="navbar-collapse collapse">
+			<ul class="nav navbar-nav">
+				<li><a id="landing_page" class="navbar_item" >Home</a></li>
+				<li><a id="skill_builder_page" class="navbar_item nav_active " >Math Skill Builders</a></li>
+				<li><a id="problem_solving_page" class="navbar_item ">Math Problem Solving</a></li>
+				<li><a id="ap_page" class="navbar_item " >AP Statistics</a></li>
+				<li><a id="chemistry_page" class="navbar_item " >Chemistry</a></li>
+			</ul>
+			<input id="tool_type" type="hidden" value="">
+			<form class="navbar-form navbar-right">
+				<input id="filter" type="text" class="form-control" placeholder="Search..." >
+			</form>
+		</div>
+		<!--/.navbar-collapse -->
+	</div>
+	</nav>
+	
+	<!-- Begin page content -->
+	<div class="container-fluid">
+		<div class="row">
+			<div class="col-md-2 col-sm-2 sidebar">
+				<ul class="nav nav-sidebar">
+					<li ><a href='186686.html'>Grade 2</a></li>
+					<li ><a href='177818.html'>Grade 3</a></li>
+					<li ><a href='177817.html'>Grade 4</a></li>
+					<li ><a href='177556.html'>Grade 5</a></li>
+					<li ><a href='177557.html'>Grade 6</a></li>
+					<li  class = 'active'><a href='177558.html'>Grade 7</a></li>
+					<li ><a href='177559.html'>Grade 8</a></li>
+					<li ><a href='237456.html'>High School: Number and Quantity</a></li>
+					<li ><a href='177560.html'>High School: Algebra</a></li>
+					<li ><a href='177568.html'>High School: Functions</a></li>
+					<li ><a href='198227.html'>High School: Geometry</a></li>
+					<li ><a href='198228.html'>High School: Statistics and Probability</a></li>
+					<li ><a href='133457.html'>College Readiness Skills/ Accuplacer</a></li>
+				</ul>
+			</div>
+			<div class="col-md-10 col-md-offset-2 col-sm-10 col-sm-offset-2 main">
+          		<h1 class="page-header">
+          			Grade 7
+          		</h1>
+				<div id="problemSets">
+					<ul class='searchable'>
+								<li class='folder'><h2> <a><span class='glyphicon glyphicon-folder-open' aria-hidden='true' 
+								style='font-size:0.8em; color:#005192; margin-right:10px;'></span>Ratios and Proportional Relationships</a></h2></li>
+							
+								<div id='tour_skill_builders'>
+								<table class='table table-hover'>
+									<thead style='font-size:0.8em;'>
+										<tr class='row'>
+											<th class='col-md-1' style='text-align:right;'>View</th>
+											<th class='col-md-1' style='text-align:left;'>Assign</th>
+											<th class='col-md-10'></th>
+										</tr>
+									</thead>
+									<tbody style='font-size:1.5em;'>
+											<tr class='curriculum_item row'>
+												<td class='col-md-1' style='text-align:right;'>
+												<div class='btn-group'>
+													<a class='dropdown-toggle' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>
+													<img src='images/view_problems_magnifier.png' style='width:30px'></a>
+													<ul class='dropdown-menu pull-middle'><li><a class='view_problem_icon' target='_blank' href='http://assistmentsdirect.org/view_problems/
+														6022'>View Selected Problems</a></li><li><a class='student_view' target='_blank' href='http://www.assistmentsdirect.org/tutor'>
+														Student View</a></li></ul>
+												</div>
+												</td>
+												<td class='col-md-1' style='text-align:left;'>
+													<a href='javascript:void(0);' class='classroom_share_button'>
+														<input type='hidden' value=6022><input type='hidden' value='Unit-Rate 7.RP.A.1'>
+														<img src='http://www.gstatic.com/classroom/logo_square_48.svg' width='25px' height='25px'>
+													</a>
+												</td>
+												<td class='col-md-10'>
+														Unit-Rate 7.RP.A.1
+												</td>
+											</tr>
+											<tr class='curriculum_item row'>
+												<td class='col-md-1' style='text-align:right;'>
+												<div class='btn-group'>
+													<a class='dropdown-toggle' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>
+													<img src='images/view_problems_magnifier.png' style='width:30px'></a>
+													<ul class='dropdown-menu pull-middle'><li><a class='view_problem_icon' target='_blank' href='http://assistmentsdirect.org/view_problems/
+														613231'>View Selected Problems</a></li><li><a class='student_view' target='_blank' href='http://www.assistmentsdirect.org/tutor'>
+														Student View</a></li></ul>
+												</div>
+												</td>
+												<td class='col-md-1' style='text-align:left;'>
+													<a href='javascript:void(0);' class='classroom_share_button'>
+														<input type='hidden' value=613231><input type='hidden' value='Recognizing Proportional Relationships 7.RP.A.2.A'>
+														<img src='http://www.gstatic.com/classroom/logo_square_48.svg' width='25px' height='25px'>
+													</a>
+												</td>
+												<td class='col-md-10'>
+														Recognizing Proportional Relationships 7.RP.A.2.A
+												</td>
+											</tr>
+											<tr class='curriculum_item row'>
+												<td class='col-md-1' style='text-align:right;'>
+												<div class='btn-group'>
+													<a class='dropdown-toggle' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>
+													<img src='images/view_problems_magnifier.png' style='width:30px'></a>
+													<ul class='dropdown-menu pull-middle'><li><a class='view_problem_icon' target='_blank' href='http://assistmentsdirect.org/view_problems/
+														7195'>View Selected Problems</a></li><li><a class='student_view' target='_blank' href='http://www.assistmentsdirect.org/tutor'>
+														Student View</a></li></ul>
+												</div>
+												</td>
+												<td class='col-md-1' style='text-align:left;'>
+													<a href='javascript:void(0);' class='classroom_share_button'>
+														<input type='hidden' value=7195><input type='hidden' value='Setting up Proportions 7.RP.A.2.C'>
+														<img src='http://www.gstatic.com/classroom/logo_square_48.svg' width='25px' height='25px'>
+													</a>
+												</td>
+												<td class='col-md-10'>
+														Setting up Proportions 7.RP.A.2.C
+												</td>
+											</tr>
+											<tr class='curriculum_item row'>
+												<td class='col-md-1' style='text-align:right;'>
+												<div class='btn-group'>
+													<a class='dropdown-toggle' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>
+													<img src='images/view_problems_magnifier.png' style='width:30px'></a>
+													<ul class='dropdown-menu pull-middle'><li><a class='view_problem_icon' target='_blank' href='http://assistmentsdirect.org/view_problems/
+														7229'>View Selected Problems</a></li><li><a class='student_view' target='_blank' href='http://www.assistmentsdirect.org/tutor'>
+														Student View</a></li></ul>
+												</div>
+												</td>
+												<td class='col-md-1' style='text-align:left;'>
+													<a href='javascript:void(0);' class='classroom_share_button'>
+														<input type='hidden' value=7229><input type='hidden' value='Finding the Angle using Percent on a Circle Graph  7.RP.A.2.C'>
+														<img src='http://www.gstatic.com/classroom/logo_square_48.svg' width='25px' height='25px'>
+													</a>
+												</td>
+												<td class='col-md-10'>
+														Finding the Angle using Percent on a Circle Graph  7.RP.A.2.C
+												</td>
+											</tr>
+											<tr class='curriculum_item row'>
+												<td class='col-md-1' style='text-align:right;'>
+												<div class='btn-group'>
+													<a class='dropdown-toggle' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>
+													<img src='images/view_problems_magnifier.png' style='width:30px'></a>
+													<ul class='dropdown-menu pull-middle'><li><a class='view_problem_icon' target='_blank' href='http://assistmentsdirect.org/view_problems/
+														6851'>View Selected Problems</a></li><li><a class='student_view' target='_blank' href='http://www.assistmentsdirect.org/tutor'>
+														Student View</a></li></ul>
+												</div>
+												</td>
+												<td class='col-md-1' style='text-align:left;'>
+													<a href='javascript:void(0);' class='classroom_share_button'>
+														<input type='hidden' value=6851><input type='hidden' value='Discount and Sales Tax 7.RP.A.3'>
+														<img src='http://www.gstatic.com/classroom/logo_square_48.svg' width='25px' height='25px'>
+													</a>
+												</td>
+												<td class='col-md-10'>
+														Discount and Sales Tax 7.RP.A.3
+												</td>
+											</tr>
+											<tr class='curriculum_item row'>
+												<td class='col-md-1' style='text-align:right;'>
+												<div class='btn-group'>
+													<a class='dropdown-toggle' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>
+													<img src='images/view_problems_magnifier.png' style='width:30px'></a>
+													<ul class='dropdown-menu pull-middle'><li><a class='view_problem_icon' target='_blank' href='http://assistmentsdirect.org/view_problems/
+														40996'>View Selected Problems</a></li><li><a class='student_view' target='_blank' href='http://www.assistmentsdirect.org/tutor'>
+														Student View</a></li></ul>
+												</div>
+												</td>
+												<td class='col-md-1' style='text-align:left;'>
+													<a href='javascript:void(0);' class='classroom_share_button'>
+														<input type='hidden' value=40996><input type='hidden' value='Percent Increase Or Decrease 7.RP.A.3'>
+														<img src='http://www.gstatic.com/classroom/logo_square_48.svg' width='25px' height='25px'>
+													</a>
+												</td>
+												<td class='col-md-10'>
+														Percent Increase Or Decrease 7.RP.A.3
+												</td>
+											</tr>
+											<tr class='curriculum_item row'>
+												<td class='col-md-1' style='text-align:right;'>
+												<div class='btn-group'>
+													<a class='dropdown-toggle' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>
+													<img src='images/view_problems_magnifier.png' style='width:30px'></a>
+													<ul class='dropdown-menu pull-middle'><li><a class='view_problem_icon' target='_blank' href='http://assistmentsdirect.org/view_problems/
+														6056'>View Selected Problems</a></li><li><a class='student_view' target='_blank' href='http://www.assistmentsdirect.org/tutor'>
+														Student View</a></li></ul>
+												</div>
+												</td>
+												<td class='col-md-1' style='text-align:left;'>
+													<a href='javascript:void(0);' class='classroom_share_button'>
+														<input type='hidden' value=6056><input type='hidden' value='Finding the Missing Value on Similar Figures 7.RP.A.3'>
+														<img src='http://www.gstatic.com/classroom/logo_square_48.svg' width='25px' height='25px'>
+													</a>
+												</td>
+												<td class='col-md-10'>
+														Finding the Missing Value on Similar Figures 7.RP.A.3
+												</td>
+											</tr>
+									</tbody>
+									</table>
+									</div>
+								<li class='folder'><h2> <a><span class='glyphicon glyphicon-folder-open' aria-hidden='true' 
+								style='font-size:0.8em; color:#005192; margin-right:10px;'></span>The Number System</a></h2></li>
+							
+								<div id='tour_skill_builders'>
+								<table class='table table-hover'>
+									<thead style='font-size:0.8em;'>
+										<tr class='row'>
+											<th class='col-md-1' style='text-align:right;'>View</th>
+											<th class='col-md-1' style='text-align:left;'>Assign</th>
+											<th class='col-md-10'></th>
+										</tr>
+									</thead>
+									<tbody style='font-size:1.5em;'>
+											<tr class='curriculum_item row'>
+												<td class='col-md-1' style='text-align:right;'>
+												<div class='btn-group'>
+													<a class='dropdown-toggle' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>
+													<img src='images/view_problems_magnifier.png' style='width:30px'></a>
+													<ul class='dropdown-menu pull-middle'><li><a class='view_problem_icon' target='_blank' href='http://assistmentsdirect.org/view_problems/
+														7159'>View Selected Problems</a></li><li><a class='student_view' target='_blank' href='http://www.assistmentsdirect.org/tutor'>
+														Student View</a></li></ul>
+												</div>
+												</td>
+												<td class='col-md-1' style='text-align:left;'>
+													<a href='javascript:void(0);' class='classroom_share_button'>
+														<input type='hidden' value=7159><input type='hidden' value='Adding Integers 7.NS.A.1d'>
+														<img src='http://www.gstatic.com/classroom/logo_square_48.svg' width='25px' height='25px'>
+													</a>
+												</td>
+												<td class='col-md-10'>
+														Adding Integers 7.NS.A.1d
+												</td>
+											</tr>
+											<tr class='curriculum_item row'>
+												<td class='col-md-1' style='text-align:right;'>
+												<div class='btn-group'>
+													<a class='dropdown-toggle' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>
+													<img src='images/view_problems_magnifier.png' style='width:30px'></a>
+													<ul class='dropdown-menu pull-middle'><li><a class='view_problem_icon' target='_blank' href='http://assistmentsdirect.org/view_problems/
+														7014'>View Selected Problems</a></li><li><a class='student_view' target='_blank' href='http://www.assistmentsdirect.org/tutor'>
+														Student View</a></li></ul>
+												</div>
+												</td>
+												<td class='col-md-1' style='text-align:left;'>
+													<a href='javascript:void(0);' class='classroom_share_button'>
+														<input type='hidden' value=7014><input type='hidden' value='Subtracting Integers 7.NS.A.1d'>
+														<img src='http://www.gstatic.com/classroom/logo_square_48.svg' width='25px' height='25px'>
+													</a>
+												</td>
+												<td class='col-md-10'>
+														Subtracting Integers 7.NS.A.1d
+												</td>
+											</tr>
+											<tr class='curriculum_item row'>
+												<td class='col-md-1' style='text-align:right;'>
+												<div class='btn-group'>
+													<a class='dropdown-toggle' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>
+													<img src='images/view_problems_magnifier.png' style='width:30px'></a>
+													<ul class='dropdown-menu pull-middle'><li><a class='view_problem_icon' target='_blank' href='http://assistmentsdirect.org/view_problems/
+														11898'>View Selected Problems</a></li><li><a class='student_view' target='_blank' href='http://www.assistmentsdirect.org/tutor'>
+														Student View</a></li></ul>
+												</div>
+												</td>
+												<td class='col-md-1' style='text-align:left;'>
+													<a href='javascript:void(0);' class='classroom_share_button'>
+														<input type='hidden' value=11898><input type='hidden' value='Adding or Subtracting Integers 7.NS.A.1d'>
+														<img src='http://www.gstatic.com/classroom/logo_square_48.svg' width='25px' height='25px'>
+													</a>
+												</td>
+												<td class='col-md-10'>
+														Adding or Subtracting Integers 7.NS.A.1d
+												</td>
+											</tr>
+											<tr class='curriculum_item row'>
+												<td class='col-md-1' style='text-align:right;'>
+												<div class='btn-group'>
+													<a class='dropdown-toggle' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>
+													<img src='images/view_problems_magnifier.png' style='width:30px'></a>
+													<ul class='dropdown-menu pull-middle'><li><a class='view_problem_icon' target='_blank' href='http://assistmentsdirect.org/view_problems/
+														5962'>View Selected Problems</a></li><li><a class='student_view' target='_blank' href='http://www.assistmentsdirect.org/tutor'>
+														Student View</a></li></ul>
+												</div>
+												</td>
+												<td class='col-md-1' style='text-align:left;'>
+													<a href='javascript:void(0);' class='classroom_share_button'>
+														<input type='hidden' value=5962><input type='hidden' value='Adding or Subtracting Negative Decimals 7.NS.A.1d'>
+														<img src='http://www.gstatic.com/classroom/logo_square_48.svg' width='25px' height='25px'>
+													</a>
+												</td>
+												<td class='col-md-10'>
+														Adding or Subtracting Negative Decimals 7.NS.A.1d
+												</td>
+											</tr>
+											<tr class='curriculum_item row'>
+												<td class='col-md-1' style='text-align:right;'>
+												<div class='btn-group'>
+													<a class='dropdown-toggle' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>
+													<img src='images/view_problems_magnifier.png' style='width:30px'></a>
+													<ul class='dropdown-menu pull-middle'><li><a class='view_problem_icon' target='_blank' href='http://assistmentsdirect.org/view_problems/
+														5965'>View Selected Problems</a></li><li><a class='student_view' target='_blank' href='http://www.assistmentsdirect.org/tutor'>
+														Student View</a></li></ul>
+												</div>
+												</td>
+												<td class='col-md-1' style='text-align:left;'>
+													<a href='javascript:void(0);' class='classroom_share_button'>
+														<input type='hidden' value=5965><input type='hidden' value='Multiplying Integers 7.NS.A.2c'>
+														<img src='http://www.gstatic.com/classroom/logo_square_48.svg' width='25px' height='25px'>
+													</a>
+												</td>
+												<td class='col-md-10'>
+														Multiplying Integers 7.NS.A.2c
+												</td>
+											</tr>
+											<tr class='curriculum_item row'>
+												<td class='col-md-1' style='text-align:right;'>
+												<div class='btn-group'>
+													<a class='dropdown-toggle' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>
+													<img src='images/view_problems_magnifier.png' style='width:30px'></a>
+													<ul class='dropdown-menu pull-middle'><li><a class='view_problem_icon' target='_blank' href='http://assistmentsdirect.org/view_problems/
+														7020'>View Selected Problems</a></li><li><a class='student_view' target='_blank' href='http://www.assistmentsdirect.org/tutor'>
+														Student View</a></li></ul>
+												</div>
+												</td>
+												<td class='col-md-1' style='text-align:left;'>
+													<a href='javascript:void(0);' class='classroom_share_button'>
+														<input type='hidden' value=7020><input type='hidden' value='Dividing Integers 7.NS.A.2c'>
+														<img src='http://www.gstatic.com/classroom/logo_square_48.svg' width='25px' height='25px'>
+													</a>
+												</td>
+												<td class='col-md-10'>
+														Dividing Integers 7.NS.A.2c
+												</td>
+											</tr>
+											<tr class='curriculum_item row'>
+												<td class='col-md-1' style='text-align:right;'>
+												<div class='btn-group'>
+													<a class='dropdown-toggle' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>
+													<img src='images/view_problems_magnifier.png' style='width:30px'></a>
+													<ul class='dropdown-menu pull-middle'><li><a class='view_problem_icon' target='_blank' href='http://assistmentsdirect.org/view_problems/
+														11899'>View Selected Problems</a></li><li><a class='student_view' target='_blank' href='http://www.assistmentsdirect.org/tutor'>
+														Student View</a></li></ul>
+												</div>
+												</td>
+												<td class='col-md-1' style='text-align:left;'>
+													<a href='javascript:void(0);' class='classroom_share_button'>
+														<input type='hidden' value=11899><input type='hidden' value='Multiplying or Dividing Integers 7.NS.A.2c'>
+														<img src='http://www.gstatic.com/classroom/logo_square_48.svg' width='25px' height='25px'>
+													</a>
+												</td>
+												<td class='col-md-10'>
+														Multiplying or Dividing Integers 7.NS.A.2c
+												</td>
+											</tr>
+											<tr class='curriculum_item row'>
+												<td class='col-md-1' style='text-align:right;'>
+												<div class='btn-group'>
+													<a class='dropdown-toggle' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>
+													<img src='images/view_problems_magnifier.png' style='width:30px'></a>
+													<ul class='dropdown-menu pull-middle'><li><a class='view_problem_icon' target='_blank' href='http://assistmentsdirect.org/view_problems/
+														202153'>View Selected Problems</a></li><li><a class='student_view' target='_blank' href='http://www.assistmentsdirect.org/tutor'>
+														Student View</a></li></ul>
+												</div>
+												</td>
+												<td class='col-md-1' style='text-align:left;'>
+													<a href='javascript:void(0);' class='classroom_share_button'>
+														<input type='hidden' value=202153><input type='hidden' value='Multiplying or Dividing Negative Decimals 7.NS.A.2c'>
+														<img src='http://www.gstatic.com/classroom/logo_square_48.svg' width='25px' height='25px'>
+													</a>
+												</td>
+												<td class='col-md-10'>
+														Multiplying or Dividing Negative Decimals 7.NS.A.2c
+												</td>
+											</tr>
+											<tr class='curriculum_item row'>
+												<td class='col-md-1' style='text-align:right;'>
+												<div class='btn-group'>
+													<a class='dropdown-toggle' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>
+													<img src='images/view_problems_magnifier.png' style='width:30px'></a>
+													<ul class='dropdown-menu pull-middle'><li><a class='view_problem_icon' target='_blank' href='http://assistmentsdirect.org/view_problems/
+														5946'>View Selected Problems</a></li><li><a class='student_view' target='_blank' href='http://www.assistmentsdirect.org/tutor'>
+														Student View</a></li></ul>
+												</div>
+												</td>
+												<td class='col-md-1' style='text-align:left;'>
+													<a href='javascript:void(0);' class='classroom_share_button'>
+														<input type='hidden' value=5946><input type='hidden' value='Order of Operations: Addition and Multiplication 7.NS.A.3 EX'>
+														<img src='http://www.gstatic.com/classroom/logo_square_48.svg' width='25px' height='25px'>
+													</a>
+												</td>
+												<td class='col-md-10'>
+														Order of Operations: Addition and Multiplication 7.NS.A.3 EX
+												</td>
+											</tr>
+											<tr class='curriculum_item row'>
+												<td class='col-md-1' style='text-align:right;'>
+												<div class='btn-group'>
+													<a class='dropdown-toggle' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>
+													<img src='images/view_problems_magnifier.png' style='width:30px'></a>
+													<ul class='dropdown-menu pull-middle'><li><a class='view_problem_icon' target='_blank' href='http://assistmentsdirect.org/view_problems/
+														395138'>View Selected Problems</a></li><li><a class='student_view' target='_blank' href='http://www.assistmentsdirect.org/tutor'>
+														Student View</a></li></ul>
+												</div>
+												</td>
+												<td class='col-md-1' style='text-align:left;'>
+													<a href='javascript:void(0);' class='classroom_share_button'>
+														<input type='hidden' value=395138><input type='hidden' value='Order of Operations no exponents 7.NS.A.3. EX'>
+														<img src='http://www.gstatic.com/classroom/logo_square_48.svg' width='25px' height='25px'>
+													</a>
+												</td>
+												<td class='col-md-10'>
+														Order of Operations no exponents 7.NS.A.3. EX
+												</td>
+											</tr>
+											<tr class='curriculum_item row'>
+												<td class='col-md-1' style='text-align:right;'>
+												<div class='btn-group'>
+													<a class='dropdown-toggle' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>
+													<img src='images/view_problems_magnifier.png' style='width:30px'></a>
+													<ul class='dropdown-menu pull-middle'><li><a class='view_problem_icon' target='_blank' href='http://assistmentsdirect.org/view_problems/
+														458321'>View Selected Problems</a></li><li><a class='student_view' target='_blank' href='http://www.assistmentsdirect.org/tutor'>
+														Student View</a></li></ul>
+												</div>
+												</td>
+												<td class='col-md-1' style='text-align:left;'>
+													<a href='javascript:void(0);' class='classroom_share_button'>
+														<input type='hidden' value=458321><input type='hidden' value='Order of Operations with exponents 7.NS.A.3'>
+														<img src='http://www.gstatic.com/classroom/logo_square_48.svg' width='25px' height='25px'>
+													</a>
+												</td>
+												<td class='col-md-10'>
+														Order of Operations with exponents 7.NS.A.3
+												</td>
+											</tr>
+											<tr class='curriculum_item row'>
+												<td class='col-md-1' style='text-align:right;'>
+												<div class='btn-group'>
+													<a class='dropdown-toggle' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>
+													<img src='images/view_problems_magnifier.png' style='width:30px'></a>
+													<ul class='dropdown-menu pull-middle'><li><a class='view_problem_icon' target='_blank' href='http://assistmentsdirect.org/view_problems/
+														14247'>View Selected Problems</a></li><li><a class='student_view' target='_blank' href='http://www.assistmentsdirect.org/tutor'>
+														Student View</a></li></ul>
+												</div>
+												</td>
+												<td class='col-md-1' style='text-align:left;'>
+													<a href='javascript:void(0);' class='classroom_share_button'>
+														<input type='hidden' value=14247><input type='hidden' value='Order of Operations includes square roots 7.NS.A.3'>
+														<img src='http://www.gstatic.com/classroom/logo_square_48.svg' width='25px' height='25px'>
+													</a>
+												</td>
+												<td class='col-md-10'>
+														Order of Operations includes square roots 7.NS.A.3
+												</td>
+											</tr>
+											<tr class='curriculum_item row'>
+												<td class='col-md-1' style='text-align:right;'>
+												<div class='btn-group'>
+													<a class='dropdown-toggle' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>
+													<img src='images/view_problems_magnifier.png' style='width:30px'></a>
+													<ul class='dropdown-menu pull-middle'><li><a class='view_problem_icon' target='_blank' href='http://assistmentsdirect.org/view_problems/
+														7157'>View Selected Problems</a></li><li><a class='student_view' target='_blank' href='http://www.assistmentsdirect.org/tutor'>
+														Student View</a></li></ul>
+												</div>
+												</td>
+												<td class='col-md-1' style='text-align:left;'>
+													<a href='javascript:void(0);' class='classroom_share_button'>
+														<input type='hidden' value=7157><input type='hidden' value='Evaluating Expressions 7.NS.A.3'>
+														<img src='http://www.gstatic.com/classroom/logo_square_48.svg' width='25px' height='25px'>
+													</a>
+												</td>
+												<td class='col-md-10'>
+														Evaluating Expressions 7.NS.A.3
+												</td>
+											</tr>
+									</tbody>
+									</table>
+									</div>
+								<li class='folder'><h2> <a><span class='glyphicon glyphicon-folder-open' aria-hidden='true' 
+								style='font-size:0.8em; color:#005192; margin-right:10px;'></span>Expressions and Equations</a></h2></li>
+							
+								<div id='tour_skill_builders'>
+								<table class='table table-hover'>
+									<thead style='font-size:0.8em;'>
+										<tr class='row'>
+											<th class='col-md-1' style='text-align:right;'>View</th>
+											<th class='col-md-1' style='text-align:left;'>Assign</th>
+											<th class='col-md-10'></th>
+										</tr>
+									</thead>
+									<tbody style='font-size:1.5em;'>
+											<tr class='curriculum_item row'>
+												<td class='col-md-1' style='text-align:right;'>
+												<div class='btn-group'>
+													<a class='dropdown-toggle' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>
+													<img src='images/view_problems_magnifier.png' style='width:30px'></a>
+													<ul class='dropdown-menu pull-middle'><li><a class='view_problem_icon' target='_blank' href='http://assistmentsdirect.org/view_problems/
+														13935'>View Selected Problems</a></li><li><a class='student_view' target='_blank' href='http://www.assistmentsdirect.org/tutor'>
+														Student View</a></li></ul>
+												</div>
+												</td>
+												<td class='col-md-1' style='text-align:left;'>
+													<a href='javascript:void(0);' class='classroom_share_button'>
+														<input type='hidden' value=13935><input type='hidden' value='Recognizing Equivalent Expressions 7.EE.A.1'>
+														<img src='http://www.gstatic.com/classroom/logo_square_48.svg' width='25px' height='25px'>
+													</a>
+												</td>
+												<td class='col-md-10'>
+														Recognizing Equivalent Expressions 7.EE.A.1
+												</td>
+											</tr>
+											<tr class='curriculum_item row'>
+												<td class='col-md-1' style='text-align:right;'>
+												<div class='btn-group'>
+													<a class='dropdown-toggle' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>
+													<img src='images/view_problems_magnifier.png' style='width:30px'></a>
+													<ul class='dropdown-menu pull-middle'><li><a class='view_problem_icon' target='_blank' href='http://assistmentsdirect.org/view_problems/
+														551933'>View Selected Problems</a></li><li><a class='student_view' target='_blank' href='http://www.assistmentsdirect.org/tutor'>
+														Student View</a></li></ul>
+												</div>
+												</td>
+												<td class='col-md-1' style='text-align:left;'>
+													<a href='javascript:void(0);' class='classroom_share_button'>
+														<input type='hidden' value=551933><input type='hidden' value='Distributive Property 7.EE.A.1 Ex'>
+														<img src='http://www.gstatic.com/classroom/logo_square_48.svg' width='25px' height='25px'>
+													</a>
+												</td>
+												<td class='col-md-10'>
+														Distributive Property 7.EE.A.1 Ex
+												</td>
+											</tr>
+											<tr class='curriculum_item row'>
+												<td class='col-md-1' style='text-align:right;'>
+												<div class='btn-group'>
+													<a class='dropdown-toggle' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>
+													<img src='images/view_problems_magnifier.png' style='width:30px'></a>
+													<ul class='dropdown-menu pull-middle'><li><a class='view_problem_icon' target='_blank' href='http://assistmentsdirect.org/view_problems/
+														37570'>View Selected Problems</a></li><li><a class='student_view' target='_blank' href='http://www.assistmentsdirect.org/tutor'>
+														Student View</a></li></ul>
+												</div>
+												</td>
+												<td class='col-md-1' style='text-align:left;'>
+													<a href='javascript:void(0);' class='classroom_share_button'>
+														<input type='hidden' value=37570><input type='hidden' value='Combining Like Terms 7.EE.A.1'>
+														<img src='http://www.gstatic.com/classroom/logo_square_48.svg' width='25px' height='25px'>
+													</a>
+												</td>
+												<td class='col-md-10'>
+														Combining Like Terms 7.EE.A.1
+												</td>
+											</tr>
+											<tr class='curriculum_item row'>
+												<td class='col-md-1' style='text-align:right;'>
+												<div class='btn-group'>
+													<a class='dropdown-toggle' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>
+													<img src='images/view_problems_magnifier.png' style='width:30px'></a>
+													<ul class='dropdown-menu pull-middle'><li><a class='view_problem_icon' target='_blank' href='http://assistmentsdirect.org/view_problems/
+														7165'>View Selected Problems</a></li><li><a class='student_view' target='_blank' href='http://www.assistmentsdirect.org/tutor'>
+														Student View</a></li></ul>
+												</div>
+												</td>
+												<td class='col-md-1' style='text-align:left;'>
+													<a href='javascript:void(0);' class='classroom_share_button'>
+														<input type='hidden' value=7165><input type='hidden' value='Solving 1-Step Addition Equation 7.EE.B.4a'>
+														<img src='http://www.gstatic.com/classroom/logo_square_48.svg' width='25px' height='25px'>
+													</a>
+												</td>
+												<td class='col-md-10'>
+														Solving 1-Step Addition Equation 7.EE.B.4a
+												</td>
+											</tr>
+											<tr class='curriculum_item row'>
+												<td class='col-md-1' style='text-align:right;'>
+												<div class='btn-group'>
+													<a class='dropdown-toggle' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>
+													<img src='images/view_problems_magnifier.png' style='width:30px'></a>
+													<ul class='dropdown-menu pull-middle'><li><a class='view_problem_icon' target='_blank' href='http://assistmentsdirect.org/view_problems/
+														7166'>View Selected Problems</a></li><li><a class='student_view' target='_blank' href='http://www.assistmentsdirect.org/tutor'>
+														Student View</a></li></ul>
+												</div>
+												</td>
+												<td class='col-md-1' style='text-align:left;'>
+													<a href='javascript:void(0);' class='classroom_share_button'>
+														<input type='hidden' value=7166><input type='hidden' value='Solving 1-Step Subtraction Equations 7.EE.B.4a'>
+														<img src='http://www.gstatic.com/classroom/logo_square_48.svg' width='25px' height='25px'>
+													</a>
+												</td>
+												<td class='col-md-10'>
+														Solving 1-Step Subtraction Equations 7.EE.B.4a
+												</td>
+											</tr>
+											<tr class='curriculum_item row'>
+												<td class='col-md-1' style='text-align:right;'>
+												<div class='btn-group'>
+													<a class='dropdown-toggle' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>
+													<img src='images/view_problems_magnifier.png' style='width:30px'></a>
+													<ul class='dropdown-menu pull-middle'><li><a class='view_problem_icon' target='_blank' href='http://assistmentsdirect.org/view_problems/
+														8946'>View Selected Problems</a></li><li><a class='student_view' target='_blank' href='http://www.assistmentsdirect.org/tutor'>
+														Student View</a></li></ul>
+												</div>
+												</td>
+												<td class='col-md-1' style='text-align:left;'>
+													<a href='javascript:void(0);' class='classroom_share_button'>
+														<input type='hidden' value=8946><input type='hidden' value='Solving 1-Step Addition & Subtraction Equations 7.EE.B.4a'>
+														<img src='http://www.gstatic.com/classroom/logo_square_48.svg' width='25px' height='25px'>
+													</a>
+												</td>
+												<td class='col-md-10'>
+														Solving 1-Step Addition & Subtraction Equations 7.EE.B.4a
+												</td>
+											</tr>
+											<tr class='curriculum_item row'>
+												<td class='col-md-1' style='text-align:right;'>
+												<div class='btn-group'>
+													<a class='dropdown-toggle' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>
+													<img src='images/view_problems_magnifier.png' style='width:30px'></a>
+													<ul class='dropdown-menu pull-middle'><li><a class='view_problem_icon' target='_blank' href='http://assistmentsdirect.org/view_problems/
+														7167'>View Selected Problems</a></li><li><a class='student_view' target='_blank' href='http://www.assistmentsdirect.org/tutor'>
+														Student View</a></li></ul>
+												</div>
+												</td>
+												<td class='col-md-1' style='text-align:left;'>
+													<a href='javascript:void(0);' class='classroom_share_button'>
+														<input type='hidden' value=7167><input type='hidden' value='Solving 1-Step Multiplication Equations 7.EE.B.4a'>
+														<img src='http://www.gstatic.com/classroom/logo_square_48.svg' width='25px' height='25px'>
+													</a>
+												</td>
+												<td class='col-md-10'>
+														Solving 1-Step Multiplication Equations 7.EE.B.4a
+												</td>
+											</tr>
+											<tr class='curriculum_item row'>
+												<td class='col-md-1' style='text-align:right;'>
+												<div class='btn-group'>
+													<a class='dropdown-toggle' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>
+													<img src='images/view_problems_magnifier.png' style='width:30px'></a>
+													<ul class='dropdown-menu pull-middle'><li><a class='view_problem_icon' target='_blank' href='http://assistmentsdirect.org/view_problems/
+														7168'>View Selected Problems</a></li><li><a class='student_view' target='_blank' href='http://www.assistmentsdirect.org/tutor'>
+														Student View</a></li></ul>
+												</div>
+												</td>
+												<td class='col-md-1' style='text-align:left;'>
+													<a href='javascript:void(0);' class='classroom_share_button'>
+														<input type='hidden' value=7168><input type='hidden' value='Solving 1-Step Division Equations 7.EE.B.4a'>
+														<img src='http://www.gstatic.com/classroom/logo_square_48.svg' width='25px' height='25px'>
+													</a>
+												</td>
+												<td class='col-md-10'>
+														Solving 1-Step Division Equations 7.EE.B.4a
+												</td>
+											</tr>
+											<tr class='curriculum_item row'>
+												<td class='col-md-1' style='text-align:right;'>
+												<div class='btn-group'>
+													<a class='dropdown-toggle' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>
+													<img src='images/view_problems_magnifier.png' style='width:30px'></a>
+													<ul class='dropdown-menu pull-middle'><li><a class='view_problem_icon' target='_blank' href='http://assistmentsdirect.org/view_problems/
+														303899'>View Selected Problems</a></li><li><a class='student_view' target='_blank' href='http://www.assistmentsdirect.org/tutor'>
+														Student View</a></li></ul>
+												</div>
+												</td>
+												<td class='col-md-1' style='text-align:left;'>
+													<a href='javascript:void(0);' class='classroom_share_button'>
+														<input type='hidden' value=303899><input type='hidden' value='Solving 1-Step Equations 7.EE.B.4a EX'>
+														<img src='http://www.gstatic.com/classroom/logo_square_48.svg' width='25px' height='25px'>
+													</a>
+												</td>
+												<td class='col-md-10'>
+														Solving 1-Step Equations 7.EE.B.4a EX
+												</td>
+											</tr>
+											<tr class='curriculum_item row'>
+												<td class='col-md-1' style='text-align:right;'>
+												<div class='btn-group'>
+													<a class='dropdown-toggle' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>
+													<img src='images/view_problems_magnifier.png' style='width:30px'></a>
+													<ul class='dropdown-menu pull-middle'><li><a class='view_problem_icon' target='_blank' href='http://assistmentsdirect.org/view_problems/
+														7148'>View Selected Problems</a></li><li><a class='student_view' target='_blank' href='http://www.assistmentsdirect.org/tutor'>
+														Student View</a></li></ul>
+												</div>
+												</td>
+												<td class='col-md-1' style='text-align:left;'>
+													<a href='javascript:void(0);' class='classroom_share_button'>
+														<input type='hidden' value=7148><input type='hidden' value='Solving 2-Step Equations 7.EE.B.4a EX'>
+														<img src='http://www.gstatic.com/classroom/logo_square_48.svg' width='25px' height='25px'>
+													</a>
+												</td>
+												<td class='col-md-10'>
+														Solving 2-Step Equations 7.EE.B.4a EX
+												</td>
+											</tr>
+											<tr class='curriculum_item row'>
+												<td class='col-md-1' style='text-align:right;'>
+												<div class='btn-group'>
+													<a class='dropdown-toggle' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>
+													<img src='images/view_problems_magnifier.png' style='width:30px'></a>
+													<ul class='dropdown-menu pull-middle'><li><a class='view_problem_icon' target='_blank' href='http://assistmentsdirect.org/view_problems/
+														5968'>View Selected Problems</a></li><li><a class='student_view' target='_blank' href='http://www.assistmentsdirect.org/tutor'>
+														Student View</a></li></ul>
+												</div>
+												</td>
+												<td class='col-md-1' style='text-align:left;'>
+													<a href='javascript:void(0);' class='classroom_share_button'>
+														<input type='hidden' value=5968><input type='hidden' value='Solving Equations (with Combining Like Terms) 7.EE.B.4a'>
+														<img src='http://www.gstatic.com/classroom/logo_square_48.svg' width='25px' height='25px'>
+													</a>
+												</td>
+												<td class='col-md-10'>
+														Solving Equations (with Combining Like Terms) 7.EE.B.4a
+												</td>
+											</tr>
+											<tr class='curriculum_item row'>
+												<td class='col-md-1' style='text-align:right;'>
+												<div class='btn-group'>
+													<a class='dropdown-toggle' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>
+													<img src='images/view_problems_magnifier.png' style='width:30px'></a>
+													<ul class='dropdown-menu pull-middle'><li><a class='view_problem_icon' target='_blank' href='http://assistmentsdirect.org/view_problems/
+														5969'>View Selected Problems</a></li><li><a class='student_view' target='_blank' href='http://www.assistmentsdirect.org/tutor'>
+														Student View</a></li></ul>
+												</div>
+												</td>
+												<td class='col-md-1' style='text-align:left;'>
+													<a href='javascript:void(0);' class='classroom_share_button'>
+														<input type='hidden' value=5969><input type='hidden' value='Solving Equations (with Distributive Property and Combining Like Terms) 7.EE.B.4a'>
+														<img src='http://www.gstatic.com/classroom/logo_square_48.svg' width='25px' height='25px'>
+													</a>
+												</td>
+												<td class='col-md-10'>
+														Solving Equations (with Distributive Property and Combining Like Terms) 7.EE.B.4a
+												</td>
+											</tr>
+											<tr class='curriculum_item row'>
+												<td class='col-md-1' style='text-align:right;'>
+												<div class='btn-group'>
+													<a class='dropdown-toggle' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>
+													<img src='images/view_problems_magnifier.png' style='width:30px'></a>
+													<ul class='dropdown-menu pull-middle'><li><a class='view_problem_icon' target='_blank' href='http://assistmentsdirect.org/view_problems/
+														614720'>View Selected Problems</a></li><li><a class='student_view' target='_blank' href='http://www.assistmentsdirect.org/tutor'>
+														Student View</a></li></ul>
+												</div>
+												</td>
+												<td class='col-md-1' style='text-align:left;'>
+													<a href='javascript:void(0);' class='classroom_share_button'>
+														<input type='hidden' value=614720><input type='hidden' value='Solving Inequalities 7.EE.B.4b'>
+														<img src='http://www.gstatic.com/classroom/logo_square_48.svg' width='25px' height='25px'>
+													</a>
+												</td>
+												<td class='col-md-10'>
+														Solving Inequalities 7.EE.B.4b
+												</td>
+											</tr>
+									</tbody>
+									</table>
+									</div>
+								<li class='folder'><h2> <a><span class='glyphicon glyphicon-folder-open' aria-hidden='true' 
+								style='font-size:0.8em; color:#005192; margin-right:10px;'></span>Geometry</a></h2></li>
+							
+								<div id='tour_skill_builders'>
+								<table class='table table-hover'>
+									<thead style='font-size:0.8em;'>
+										<tr class='row'>
+											<th class='col-md-1' style='text-align:right;'>View</th>
+											<th class='col-md-1' style='text-align:left;'>Assign</th>
+											<th class='col-md-10'></th>
+										</tr>
+									</thead>
+									<tbody style='font-size:1.5em;'>
+											<tr class='curriculum_item row'>
+												<td class='col-md-1' style='text-align:right;'>
+												<div class='btn-group'>
+													<a class='dropdown-toggle' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>
+													<img src='images/view_problems_magnifier.png' style='width:30px'></a>
+													<ul class='dropdown-menu pull-middle'><li><a class='view_problem_icon' target='_blank' href='http://assistmentsdirect.org/view_problems/
+														6066'>View Selected Problems</a></li><li><a class='student_view' target='_blank' href='http://www.assistmentsdirect.org/tutor'>
+														Student View</a></li></ul>
+												</div>
+												</td>
+												<td class='col-md-1' style='text-align:left;'>
+													<a href='javascript:void(0);' class='classroom_share_button'>
+														<input type='hidden' value=6066><input type='hidden' value='Using Scale Factor 7.G.A.1'>
+														<img src='http://www.gstatic.com/classroom/logo_square_48.svg' width='25px' height='25px'>
+													</a>
+												</td>
+												<td class='col-md-10'>
+														Using Scale Factor 7.G.A.1
+												</td>
+											</tr>
+											<tr class='curriculum_item row'>
+												<td class='col-md-1' style='text-align:right;'>
+												<div class='btn-group'>
+													<a class='dropdown-toggle' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>
+													<img src='images/view_problems_magnifier.png' style='width:30px'></a>
+													<ul class='dropdown-menu pull-middle'><li><a class='view_problem_icon' target='_blank' href='http://assistmentsdirect.org/view_problems/
+														7198'>View Selected Problems</a></li><li><a class='student_view' target='_blank' href='http://www.assistmentsdirect.org/tutor'>
+														Student View</a></li></ul>
+												</div>
+												</td>
+												<td class='col-md-1' style='text-align:left;'>
+													<a href='javascript:void(0);' class='classroom_share_button'>
+														<input type='hidden' value=7198><input type='hidden' value='Scale Drawings 7.G.A.1'>
+														<img src='http://www.gstatic.com/classroom/logo_square_48.svg' width='25px' height='25px'>
+													</a>
+												</td>
+												<td class='col-md-10'>
+														Scale Drawings 7.G.A.1
+												</td>
+											</tr>
+											<tr class='curriculum_item row'>
+												<td class='col-md-1' style='text-align:right;'>
+												<div class='btn-group'>
+													<a class='dropdown-toggle' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>
+													<img src='images/view_problems_magnifier.png' style='width:30px'></a>
+													<ul class='dropdown-menu pull-middle'><li><a class='view_problem_icon' target='_blank' href='http://assistmentsdirect.org/view_problems/
+														96850'>View Selected Problems</a></li><li><a class='student_view' target='_blank' href='http://www.assistmentsdirect.org/tutor'>
+														Student View</a></li></ul>
+												</div>
+												</td>
+												<td class='col-md-1' style='text-align:left;'>
+													<a href='javascript:void(0);' class='classroom_share_button'>
+														<input type='hidden' value=96850><input type='hidden' value='Finding Scale Factor 7.G.A.1'>
+														<img src='http://www.gstatic.com/classroom/logo_square_48.svg' width='25px' height='25px'>
+													</a>
+												</td>
+												<td class='col-md-10'>
+														Finding Scale Factor 7.G.A.1
+												</td>
+											</tr>
+											<tr class='curriculum_item row'>
+												<td class='col-md-1' style='text-align:right;'>
+												<div class='btn-group'>
+													<a class='dropdown-toggle' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>
+													<img src='images/view_problems_magnifier.png' style='width:30px'></a>
+													<ul class='dropdown-menu pull-middle'><li><a class='view_problem_icon' target='_blank' href='http://assistmentsdirect.org/view_problems/
+														6895'>View Selected Problems</a></li><li><a class='student_view' target='_blank' href='http://www.assistmentsdirect.org/tutor'>
+														Student View</a></li></ul>
+												</div>
+												</td>
+												<td class='col-md-1' style='text-align:left;'>
+													<a href='javascript:void(0);' class='classroom_share_button'>
+														<input type='hidden' value=6895><input type='hidden' value='Finding the Missing Value using a Map's Scale 7.G.A.1'>
+														<img src='http://www.gstatic.com/classroom/logo_square_48.svg' width='25px' height='25px'>
+													</a>
+												</td>
+												<td class='col-md-10'>
+														Finding the Missing Value using a Map's Scale 7.G.A.1
+												</td>
+											</tr>
+											<tr class='curriculum_item row'>
+												<td class='col-md-1' style='text-align:right;'>
+												<div class='btn-group'>
+													<a class='dropdown-toggle' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>
+													<img src='images/view_problems_magnifier.png' style='width:30px'></a>
+													<ul class='dropdown-menu pull-middle'><li><a class='view_problem_icon' target='_blank' href='http://assistmentsdirect.org/view_problems/
+														22457'>View Selected Problems</a></li><li><a class='student_view' target='_blank' href='http://www.assistmentsdirect.org/tutor'>
+														Student View</a></li></ul>
+												</div>
+												</td>
+												<td class='col-md-1' style='text-align:left;'>
+													<a href='javascript:void(0);' class='classroom_share_button'>
+														<input type='hidden' value=22457><input type='hidden' value='Radius and Diameter 7.G.B.4'>
+														<img src='http://www.gstatic.com/classroom/logo_square_48.svg' width='25px' height='25px'>
+													</a>
+												</td>
+												<td class='col-md-10'>
+														Radius and Diameter 7.G.B.4
+												</td>
+											</tr>
+											<tr class='curriculum_item row'>
+												<td class='col-md-1' style='text-align:right;'>
+												<div class='btn-group'>
+													<a class='dropdown-toggle' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>
+													<img src='images/view_problems_magnifier.png' style='width:30px'></a>
+													<ul class='dropdown-menu pull-middle'><li><a class='view_problem_icon' target='_blank' href='http://assistmentsdirect.org/view_problems/
+														10767'>View Selected Problems</a></li><li><a class='student_view' target='_blank' href='http://www.assistmentsdirect.org/tutor'>
+														Student View</a></li></ul>
+												</div>
+												</td>
+												<td class='col-md-1' style='text-align:left;'>
+													<a href='javascript:void(0);' class='classroom_share_button'>
+														<input type='hidden' value=10767><input type='hidden' value='Circumference 7.G.B.4'>
+														<img src='http://www.gstatic.com/classroom/logo_square_48.svg' width='25px' height='25px'>
+													</a>
+												</td>
+												<td class='col-md-10'>
+														Circumference 7.G.B.4
+												</td>
+											</tr>
+											<tr class='curriculum_item row'>
+												<td class='col-md-1' style='text-align:right;'>
+												<div class='btn-group'>
+													<a class='dropdown-toggle' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>
+													<img src='images/view_problems_magnifier.png' style='width:30px'></a>
+													<ul class='dropdown-menu pull-middle'><li><a class='view_problem_icon' target='_blank' href='http://assistmentsdirect.org/view_problems/
+														385752'>View Selected Problems</a></li><li><a class='student_view' target='_blank' href='http://www.assistmentsdirect.org/tutor'>
+														Student View</a></li></ul>
+												</div>
+												</td>
+												<td class='col-md-1' style='text-align:left;'>
+													<a href='javascript:void(0);' class='classroom_share_button'>
+														<input type='hidden' value=385752><input type='hidden' value='Area of Circles from Images 7.G.B.4 EX'>
+														<img src='http://www.gstatic.com/classroom/logo_square_48.svg' width='25px' height='25px'>
+													</a>
+												</td>
+												<td class='col-md-10'>
+														Area of Circles from Images 7.G.B.4 EX
+												</td>
+											</tr>
+											<tr class='curriculum_item row'>
+												<td class='col-md-1' style='text-align:right;'>
+												<div class='btn-group'>
+													<a class='dropdown-toggle' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>
+													<img src='images/view_problems_magnifier.png' style='width:30px'></a>
+													<ul class='dropdown-menu pull-middle'><li><a class='view_problem_icon' target='_blank' href='http://assistmentsdirect.org/view_problems/
+														7010'>View Selected Problems</a></li><li><a class='student_view' target='_blank' href='http://www.assistmentsdirect.org/tutor'>
+														Student View</a></li></ul>
+												</div>
+												</td>
+												<td class='col-md-1' style='text-align:left;'>
+													<a href='javascript:void(0);' class='classroom_share_button'>
+														<input type='hidden' value=7010><input type='hidden' value='Area of Circles from Word Problems 7.G.B.4'>
+														<img src='http://www.gstatic.com/classroom/logo_square_48.svg' width='25px' height='25px'>
+													</a>
+												</td>
+												<td class='col-md-10'>
+														Area of Circles from Word Problems 7.G.B.4
+												</td>
+											</tr>
+											<tr class='curriculum_item row'>
+												<td class='col-md-1' style='text-align:right;'>
+												<div class='btn-group'>
+													<a class='dropdown-toggle' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>
+													<img src='images/view_problems_magnifier.png' style='width:30px'></a>
+													<ul class='dropdown-menu pull-middle'><li><a class='view_problem_icon' target='_blank' href='http://assistmentsdirect.org/view_problems/
+														10763'>View Selected Problems</a></li><li><a class='student_view' target='_blank' href='http://www.assistmentsdirect.org/tutor'>
+														Student View</a></li></ul>
+												</div>
+												</td>
+												<td class='col-md-1' style='text-align:left;'>
+													<a href='javascript:void(0);' class='classroom_share_button'>
+														<input type='hidden' value=10763><input type='hidden' value='Area of Irregular Figures With Circles 7.G.B.4'>
+														<img src='http://www.gstatic.com/classroom/logo_square_48.svg' width='25px' height='25px'>
+													</a>
+												</td>
+												<td class='col-md-10'>
+														Area of Irregular Figures With Circles 7.G.B.4
+												</td>
+											</tr>
+											<tr class='curriculum_item row'>
+												<td class='col-md-1' style='text-align:right;'>
+												<div class='btn-group'>
+													<a class='dropdown-toggle' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>
+													<img src='images/view_problems_magnifier.png' style='width:30px'></a>
+													<ul class='dropdown-menu pull-middle'><li><a class='view_problem_icon' target='_blank' href='http://assistmentsdirect.org/view_problems/
+														562595'>View Selected Problems</a></li><li><a class='student_view' target='_blank' href='http://www.assistmentsdirect.org/tutor'>
+														Student View</a></li></ul>
+												</div>
+												</td>
+												<td class='col-md-1' style='text-align:left;'>
+													<a href='javascript:void(0);' class='classroom_share_button'>
+														<input type='hidden' value=562595><input type='hidden' value='Supplementary Angles 7.G.B.5 EX'>
+														<img src='http://www.gstatic.com/classroom/logo_square_48.svg' width='25px' height='25px'>
+													</a>
+												</td>
+												<td class='col-md-10'>
+														Supplementary Angles 7.G.B.5 EX
+												</td>
+											</tr>
+											<tr class='curriculum_item row'>
+												<td class='col-md-1' style='text-align:right;'>
+												<div class='btn-group'>
+													<a class='dropdown-toggle' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>
+													<img src='images/view_problems_magnifier.png' style='width:30px'></a>
+													<ul class='dropdown-menu pull-middle'><li><a class='view_problem_icon' target='_blank' href='http://assistmentsdirect.org/view_problems/
+														6152'>View Selected Problems</a></li><li><a class='student_view' target='_blank' href='http://www.assistmentsdirect.org/tutor'>
+														Student View</a></li></ul>
+												</div>
+												</td>
+												<td class='col-md-1' style='text-align:left;'>
+													<a href='javascript:void(0);' class='classroom_share_button'>
+														<input type='hidden' value=6152><input type='hidden' value='Surface Area Rectangular Prism  7.G.B.6'>
+														<img src='http://www.gstatic.com/classroom/logo_square_48.svg' width='25px' height='25px'>
+													</a>
+												</td>
+												<td class='col-md-10'>
+														Surface Area Rectangular Prism  7.G.B.6
+												</td>
+											</tr>
+											<tr class='curriculum_item row'>
+												<td class='col-md-1' style='text-align:right;'>
+												<div class='btn-group'>
+													<a class='dropdown-toggle' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>
+													<img src='images/view_problems_magnifier.png' style='width:30px'></a>
+													<ul class='dropdown-menu pull-middle'><li><a class='view_problem_icon' target='_blank' href='http://assistmentsdirect.org/view_problems/
+														8878'>View Selected Problems</a></li><li><a class='student_view' target='_blank' href='http://www.assistmentsdirect.org/tutor'>
+														Student View</a></li></ul>
+												</div>
+												</td>
+												<td class='col-md-1' style='text-align:left;'>
+													<a href='javascript:void(0);' class='classroom_share_button'>
+														<input type='hidden' value=8878><input type='hidden' value='Surface Area of Prisms 7.G.B.6'>
+														<img src='http://www.gstatic.com/classroom/logo_square_48.svg' width='25px' height='25px'>
+													</a>
+												</td>
+												<td class='col-md-10'>
+														Surface Area of Prisms 7.G.B.6
+												</td>
+											</tr>
+											<tr class='curriculum_item row'>
+												<td class='col-md-1' style='text-align:right;'>
+												<div class='btn-group'>
+													<a class='dropdown-toggle' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>
+													<img src='images/view_problems_magnifier.png' style='width:30px'></a>
+													<ul class='dropdown-menu pull-middle'><li><a class='view_problem_icon' target='_blank' href='http://assistmentsdirect.org/view_problems/
+														8917'>View Selected Problems</a></li><li><a class='student_view' target='_blank' href='http://www.assistmentsdirect.org/tutor'>
+														Student View</a></li></ul>
+												</div>
+												</td>
+												<td class='col-md-1' style='text-align:left;'>
+													<a href='javascript:void(0);' class='classroom_share_button'>
+														<input type='hidden' value=8917><input type='hidden' value='Volume of Prisms 7.G.B.6'>
+														<img src='http://www.gstatic.com/classroom/logo_square_48.svg' width='25px' height='25px'>
+													</a>
+												</td>
+												<td class='col-md-10'>
+														Volume of Prisms 7.G.B.6
+												</td>
+											</tr>
+											<tr class='curriculum_item row'>
+												<td class='col-md-1' style='text-align:right;'>
+												<div class='btn-group'>
+													<a class='dropdown-toggle' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>
+													<img src='images/view_problems_magnifier.png' style='width:30px'></a>
+													<ul class='dropdown-menu pull-middle'><li><a class='view_problem_icon' target='_blank' href='http://assistmentsdirect.org/view_problems/
+														8894'>View Selected Problems</a></li><li><a class='student_view' target='_blank' href='http://www.assistmentsdirect.org/tutor'>
+														Student View</a></li></ul>
+												</div>
+												</td>
+												<td class='col-md-1' style='text-align:left;'>
+													<a href='javascript:void(0);' class='classroom_share_button'>
+														<input type='hidden' value=8894><input type='hidden' value='Surface Area of Cylinders 7.G.B.6'>
+														<img src='http://www.gstatic.com/classroom/logo_square_48.svg' width='25px' height='25px'>
+													</a>
+												</td>
+												<td class='col-md-10'>
+														Surface Area of Cylinders 7.G.B.6
+												</td>
+											</tr>
+									</tbody>
+									</table>
+									</div>
+								<li class='folder'><h2> <a><span class='glyphicon glyphicon-folder-open' aria-hidden='true' 
+								style='font-size:0.8em; color:#005192; margin-right:10px;'></span>Statistics and Probability</a></h2></li>
+							
+								<div id='tour_skill_builders'>
+								<table class='table table-hover'>
+									<thead style='font-size:0.8em;'>
+										<tr class='row'>
+											<th class='col-md-1' style='text-align:right;'>View</th>
+											<th class='col-md-1' style='text-align:left;'>Assign</th>
+											<th class='col-md-10'></th>
+										</tr>
+									</thead>
+									<tbody style='font-size:1.5em;'>
+											<tr class='curriculum_item row'>
+												<td class='col-md-1' style='text-align:right;'>
+												<div class='btn-group'>
+													<a class='dropdown-toggle' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>
+													<img src='images/view_problems_magnifier.png' style='width:30px'></a>
+													<ul class='dropdown-menu pull-middle'><li><a class='view_problem_icon' target='_blank' href='http://assistmentsdirect.org/view_problems/
+														8585'>View Selected Problems</a></li><li><a class='student_view' target='_blank' href='http://www.assistmentsdirect.org/tutor'>
+														Student View</a></li></ul>
+												</div>
+												</td>
+												<td class='col-md-1' style='text-align:left;'>
+													<a href='javascript:void(0);' class='classroom_share_button'>
+														<input type='hidden' value=8585><input type='hidden' value='Probability of a Single Event 7.SP.C.7a'>
+														<img src='http://www.gstatic.com/classroom/logo_square_48.svg' width='25px' height='25px'>
+													</a>
+												</td>
+												<td class='col-md-10'>
+														Probability of a Single Event 7.SP.C.7a
+												</td>
+											</tr>
+											<tr class='curriculum_item row'>
+												<td class='col-md-1' style='text-align:right;'>
+												<div class='btn-group'>
+													<a class='dropdown-toggle' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>
+													<img src='images/view_problems_magnifier.png' style='width:30px'></a>
+													<ul class='dropdown-menu pull-middle'><li><a class='view_problem_icon' target='_blank' href='http://assistmentsdirect.org/view_problems/
+														204037'>View Selected Problems</a></li><li><a class='student_view' target='_blank' href='http://www.assistmentsdirect.org/tutor'>
+														Student View</a></li></ul>
+												</div>
+												</td>
+												<td class='col-md-1' style='text-align:left;'>
+													<a href='javascript:void(0);' class='classroom_share_button'>
+														<input type='hidden' value=204037><input type='hidden' value='Probability of Two Distinct Events 7.SP.C.8'>
+														<img src='http://www.gstatic.com/classroom/logo_square_48.svg' width='25px' height='25px'>
+													</a>
+												</td>
+												<td class='col-md-10'>
+														Probability of Two Distinct Events 7.SP.C.8
+												</td>
+											</tr>
+											<tr class='curriculum_item row'>
+												<td class='col-md-1' style='text-align:right;'>
+												<div class='btn-group'>
+													<a class='dropdown-toggle' data-toggle='dropdown' aria-haspopup='true' aria-expanded='false'>
+													<img src='images/view_problems_magnifier.png' style='width:30px'></a>
+													<ul class='dropdown-menu pull-middle'><li><a class='view_problem_icon' target='_blank' href='http://assistmentsdirect.org/view_problems/
+														15528'>View Selected Problems</a></li><li><a class='student_view' target='_blank' href='http://www.assistmentsdirect.org/tutor'>
+														Student View</a></li></ul>
+												</div>
+												</td>
+												<td class='col-md-1' style='text-align:left;'>
+													<a href='javascript:void(0);' class='classroom_share_button'>
+														<input type='hidden' value=15528><input type='hidden' value='Counting Methods 7.SP.C.8'>
+														<img src='http://www.gstatic.com/classroom/logo_square_48.svg' width='25px' height='25px'>
+													</a>
+												</td>
+												<td class='col-md-10'>
+														Counting Methods 7.SP.C.8
+												</td>
+											</tr>
+									</tbody>
+									</table>
+									</div>
+					</ul>
+				</div>
+			</div>
+		</div>
+	</div>
+	<!-- Modal -->
+	<div class="modal fade" id="myModal" tabindex="-1" role="dialog"
+		aria-labelledby="myModalLabel" style="text-align: left;">
+		<div class="modal-dialog" role="document">
+			<div class="modal-content">
+				<div class="modal-header">
+					<button type="button" class="close" data-dismiss="modal"
+						aria-label="Close">
+						<span aria-hidden="true">&times;</span>
+					</button>
+					<h4 class="modal-title" id="myModalLabel">Choose class</h4>
+				</div>
+				<div class="modal-body">
+					<div style="margin: 30px 0 50px 0;">
+						<span class="glyphicon glyphicon-info-sign"></span>
+						The app needs you to choose the class <b>before</b> it reaches out to Google. 
+						You will need to choose the same class again on the next screen. 
+					</div>
+					<select id="courses_select" class="selectpicker"  title='Choose class' data-width="70%">
+					</select><br>
+					<br>
+				</div>
+				<div class="modal-footer">
+					<button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+					<button type="button" class="btn btn-primary" id="share_to_classroom_btn">Go to
+						Google Classroom</button>
+				</div>
+			</div>
+		</div>
+	</div>
+<div id="progressModal" class="modal js-loading-bar" >
+ <div class="modal-dialog" style="width:90%; height:30px;">
+   <div class="modal-content">
+     <div class="modal-body">
+       <div class='progress' style="margin-top:10px;">
+	       <div class='progress-bar progress-bar-striped active' role='progressbar' aria-vavluenow='100' aria-valuemin='0' aria-valuemax='100' style='width:100%;'>
+	       </div>
+       </div>
+     </div>
+   </div>
+ </div>
+</div>
+<div class="modal fade" id="message_modal">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header">
+        <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+        <h4 class="modal-title">Message</h4>
+      </div>
+      <div class="modal-body">
+        <p id="message_body"></p>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+      </div>
+    </div><!-- /.modal-content -->
+  </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+</body>
+</html>

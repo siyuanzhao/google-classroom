@@ -55,38 +55,35 @@ var toolSelected = "";
 			var id = $(this).attr("id");
 			toolSelected = id;
 			if(id == "skill_builder_link"){
-				window.location.assign("/google_classroom/skill_builder.html");
+				window.location.assign("177559.html");
 			}else if (id == "ap_statistics_link"){
-				window.location.assign("/direct/SkillBuilderGoogleClassroom?folder_id=210644&tool_type=ap_statistics&location="
-						+locationStr);
+				window.location.assign("210644.html");
 			}else if (id == "chemistry_link"){
-				window.location.assign("/direct/SkillBuilderGoogleClassroom?folder_id=226695&tool_type=chemistry&location="
-						+locationStr);
+				window.location.assign("226712.html");
 			} else if(id == "problem_solving_link") {
-				window.location.assign("/direct/SkillBuilderGoogleClassroom?folder_id=231370&tool_type=problem_solving&location="+
-						locationStr);
+				window.location.assign("183739.html");
 			}
-			
+
 		});
-		
+
 		$(".navbar_item").click(function(){
 			var id = $(this).attr("id");
 			if(id == "landing_page" || id == "logo"){
 				toolSelected = "landing_page";
-				window.location.assign("/direct/GoogleAppsLandingPage?location="+locationStr);
+				window.location.assign("index.html");
 			}else if(id == "skill_builder_page"){
 				toolSelected = "skill_builder_link";
-				window.location.assign("/google_classroom/skill_builder.html");
+				window.location.assign("177559.html");
 			}else if (id == "ap_page"){
 				toolSelected = "ap_statistics_link";
-				window.location.assign("/direct/SkillBuilderGoogleClassroom?folder_id=210644&tool_type=ap_statistics&location="+locationStr);
+				window.location.assign("210644.html");
 			}else if(id == "chemistry_page"){
 				toolSelected = "chemistry_link";
-				window.location.assign("/direct/SkillBuilderGoogleClassroom?folder_id=226695&tool_type=chemistry&location="+locationStr);
+				window.location.assign("226712.html");
 			} else if(id == "problem_solving_page") {
-					window.location.assign("/direct/SkillBuilderGoogleClassroom?folder_id=231370&tool_type=problem_solving&location="+locationStr);
+					window.location.assign("183739.html");
 			}
-			
+
 		});
 		$(".apps_link").hover(function(){
 			$("img",this).animate({
@@ -118,9 +115,9 @@ var toolSelected = "";
 			<button type="button" class="navbar-toggle collapsed"
 				data-toggle="collapse" data-target="#navbar" aria-expanded="false"
 				aria-controls="navbar">
-				<span class="sr-only">Toggle navigation</span> 
-				<span class="icon-bar"></span> 
-				<span class="icon-bar"></span> 
+				<span class="sr-only">Toggle navigation</span>
+				<span class="icon-bar"></span>
+				<span class="icon-bar"></span>
 				<span class="icon-bar"></span>
 			</button>
 			<a class="navbar-brand navbar_item" id="logo"><img src="images/ASSISTments_APP_logo.png" style="width:30px; display:inline;margin-right:5px;"/>ASSISTments Content</a>
@@ -150,7 +147,7 @@ var toolSelected = "";
 			<div id="skill_builder_link" class="apps_link">
 				<h2><img src="images/assistments_app_math.png" style="width:90px;"></h2>
 				<h3>Math Skill Builders</h3>
-			</div>	
+			</div>
 			</div>
 			<div class="col-md-2 col-md-offset-1">
 			<div id="problem_solving_link" class="apps_link">
