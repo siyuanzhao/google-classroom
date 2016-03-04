@@ -88,6 +88,18 @@ var tour;
 			$("title").html("Math Problem Solving");
 		}
 		
+		$(".classroom_share_button").click(function(e) {
+			problem_set_id = $(this).children().first().val();
+			problem_set_name = $(this).children().first().next().val();
+			//decode here to make sure the problem set name is correct
+			problem_set_name = decodeURIComponent(problem_set_name);
+			problem_set_name = encodeURIComponent(problem_set_name);
+			gapi.auth.authorize({
+				 'client_id': CLASSROOM_CLIENT_ID,
+				 'scope': SCOPES,
+				 'immediate': true}, handleAuthResult);
+		});
+		
 		$("#share_to_classroom_btn").click(function(e) {
 			var course_id = $("#courses_select option:selected").val(); 
 			var course_name = $("#courses_select option:selected").text();
@@ -149,9 +161,7 @@ var tour;
 				window.location.assign("183739.html");
 			}
 			
-		});
-		
-		
+		});	
 	});
 	function handleAuthResult(authResult) {
 		console.log(authResult);
