@@ -4,7 +4,7 @@
 <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
 <title>Math Skill Builders</title>
-<link rel="shortcut icon" href="images/shortcut_logo.png">
+<link rel="shortcut icon" type="image/png" href="images/shortcut_logo.png">
 <link rel="stylesheet" href="stylesheets/sharelinks.css">
 <!-- Bootstrap core CSS -->
 <link href="stylesheets/bootstrap.min.css" rel="stylesheet">
@@ -97,7 +97,7 @@ var tour;
 			gapi.auth.authorize({
 				 'client_id': CLASSROOM_CLIENT_ID,
 				 'scope': SCOPES,
-				 'immediate': true}, handleAuthResult);
+				 'immediate': false}, handleAuthResult);
 		});
 		
 		$("#share_to_classroom_btn").click(function(e) {
@@ -106,7 +106,7 @@ var tour;
 			var link_to_share = "";
 			$(this).addClass("disabled");
 			$.ajax({
-				url: 'google_classroom/setup',
+				url: 'http://www.assistmentsdirect.org/google_classroom/setup',
 				type: 'POST',
 				data: {course_id: course_id, course_name: course_name, google_user_id: ownerId, problem_set_id: problem_set_id,
 								first_name: firstName, last_name: lastName, email_address: emailAddr},
