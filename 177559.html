@@ -20,6 +20,7 @@
 	src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap-select/1.7.5/js/bootstrap-select.min.js"></script>
 <script src="https://apis.google.com/js/platform.js" async defer></script>
 <script src="https://apis.google.com/js/client.js"></script>
+<script type='text/javascript' src="http://cdnjs.cloudflare.com/ajax/libs/jquery-ajaxtransport-xdomainrequest/1.0.1/jquery.xdomainrequest.min.js"></script>
 <style type="text/css">
 li {
 	list-style-type: none;
@@ -105,6 +106,10 @@ var tour;
 			var course_name = $("#courses_select option:selected").text();
 			var link_to_share = "";
 			$(this).addClass("disabled");
+			var contentType ="application/x-www-form-urlencoded; charset=utf-8";
+ 
+			if(window.XDomainRequest) //for IE8,IE9
+    			contentType = "text/plain";
 			$.ajax({
 				url: 'http://www.assistmentsdirect.org/google_classroom/setup',
 				type: 'POST',
@@ -112,6 +117,7 @@ var tour;
 				data: {course_id: course_id, course_name: course_name, google_user_id: ownerId, problem_set_id: problem_set_id,
 								first_name: firstName, last_name: lastName, email_address: emailAddr},
 				async: false,
+				contentType: contentType,
 				success: function(data) {
 					
 					link_to_share = encodeURI(data.classroom_link);
